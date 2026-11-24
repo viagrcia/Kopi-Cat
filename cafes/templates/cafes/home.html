@@ -1,0 +1,585 @@
+{% extends 'cafes/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* ================= HERO ================= */
+    .hero-section {
+        position: sticky;
+        top: 0;
+        z-index: 0;
+        height: calc(100vh + 90px);
+        padding-top: 140px;
+        padding-bottom: 90px;
+        box-sizing: border-box;
+        background: radial-gradient(circle at 30% 50%, var(--hero-glow) 0%, var(--bg) 70%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .hero-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1500px;
+        padding: 0 4rem;
+        gap: 3rem;
+        height: 100%;
+    }
+    @supports (animation-timeline: scroll()) {
+        .hero-container {
+            animation: heroAway linear both;
+            animation-timeline: scroll(root);
+            animation-range: 0 100vh;
+        }
+        @keyframes heroAway { to { transform: scale(.92) translateY(-40px); opacity: .25; } }
+    }
+
+    .floating-element { position: absolute; z-index: 2; opacity: .18; pointer-events: none; color: var(--tan); }
+    .cup-1 { top: 22%; left: 45%; width: 60px; animation: floatRotate 10s ease-in-out infinite; }
+    .sparkle-1 { bottom: 25%; left: 42%; width: 45px; animation: pulse 4s ease-in-out infinite; }
+    .bean-1 { top: 48%; left: 3%; width: 35px; animation: floatRotate 12s ease-in-out infinite 1s; }
+    .bean-2 { bottom: 18%; left: 8%; width: 25px; animation: floatRotate 15s ease-in-out infinite 2s; }
+    .cup svg, .bean svg { display: block; width: 100%; height: auto; }
+    @keyframes floatRotate { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-20px) rotate(15deg); } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: .1; } 50% { transform: scale(1.3); opacity: .25; } }
+
+    .hero-text-area { flex: 1; max-width: 600px; display: flex; flex-direction: column; justify-content: center; z-index: 10; }
+    .hero-text-area > * { opacity: 0; transform: translateY(20px); animation: fadeUp .8s cubic-bezier(.16, 1, .3, 1) forwards; }
+    .hero-badge { animation-delay: .2s; }
+    .hero-h1 { animation-delay: .4s; }
+    .hero-h3 { animation-delay: .6s; }
+    .scroll-nav-container { animation-delay: .8s; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    .hero-badge { display: inline-block; align-self: flex-start; margin-bottom: 2rem; padding: 8px 18px; border: 1px solid var(--line); border-radius: 30px; font-size: .65rem; text-transform: uppercase; letter-spacing: 4px; color: var(--tan); backdrop-filter: blur(4px); }
+    .hero-h1 { font-size: clamp(3rem, 5.4vw, 5rem); line-height: 1.05; margin: 0 0 1.5rem; color: var(--text); }
+    .hero-h1 em { font-style: italic; background: linear-gradient(to right, var(--tan), var(--accent), var(--tan)); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmerText 5s linear infinite; }
+    @keyframes shimmerText { to { background-position: 200% center; } }
+    .hero-h3 { font-size: 1rem; font-weight: 300; line-height: 1.8; color: var(--muted); margin: 0 0 1.8rem; padding-left: 20px; border-left: 1px solid var(--accent); }
+
+    .hero-search { display: flex; align-items: center; max-width: 460px; margin: 0 0 2rem; padding: .35rem .35rem .35rem 1.4rem; border: 1px solid var(--line); border-radius: 40px; background: var(--surface); backdrop-filter: blur(6px); }
+    .hero-search:focus-within { border-color: var(--tan); }
+    .hero-search input { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); font: inherit; font-size: .95rem; }
+    .hero-search input:focus { outline: none; }
+    .hero-search input::placeholder { color: var(--muted); }
+    .hero-search button { display: grid; place-items: center; width: 42px; height: 42px; border: 0; border-radius: 50%; background: var(--accent); color: #F6F3E4; }
+    .hero-search svg { width: 18px; height: 18px; }
+
+    .scroll-nav-container { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .scroll-link { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: 1px solid var(--line); border-radius: 40px; color: var(--text); text-decoration: none; font-size: .7rem; text-transform: uppercase; letter-spacing: 2px; transition: all .4s ease; }
+    .scroll-link:hover { background: var(--text); color: var(--bg); transform: translateY(-2px); }
+
+    .hero-image-area { flex: 1.2; height: 100%; display: flex; justify-content: flex-end; align-items: center; }
+    .hero-photo { width: 100%; max-height: 80vh; object-fit: contain; object-position: right center; filter: drop-shadow(-15px 15px 30px rgba(0, 0, 0, .4)); }
+
+    /* ================= SHARED: curved sheets, headings, reveals ================= */
+    .sec {
+        position: relative;
+        z-index: 1;
+        margin-top: -90px;
+        padding: calc(7rem + 90px) 4rem 7rem;
+        border-radius: 50% 50% 0 0 / 90px 90px 0 0;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    .sec h2 { font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.1; margin: 0 0 1rem; }
+    .lede { max-width: 56ch; color: var(--muted); line-height: 1.8; font-weight: 300; margin: 0 0 3rem; }
+
+    .rv {
+        opacity: 0;
+        transform: translateY(14px);
+        -webkit-mask-image: linear-gradient(90deg, #000 50%, transparent 60%);
+        mask-image: linear-gradient(90deg, #000 50%, transparent 60%);
+        -webkit-mask-size: 200% 100%;
+        mask-size: 200% 100%;
+        -webkit-mask-position: 100% 0;
+        mask-position: 100% 0;
+        transition: mask-position .9s cubic-bezier(.16, 1, .3, 1), -webkit-mask-position .9s cubic-bezier(.16, 1, .3, 1), opacity .6s, transform .9s cubic-bezier(.16, 1, .3, 1), background .3s;
+    }
+    .rv.in { opacity: 1; transform: none; -webkit-mask-position: 0 0; mask-position: 0 0; }
+    .rv.done { -webkit-mask: none; mask: none; }
+
+    .pill { font: inherit; font-size: .8rem; color: var(--text); background: none; border: 1px solid var(--line); border-radius: 20px; padding: .4rem 1rem; transition: all .3s; }
+    .pill:hover, .pill[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+    .tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .tags span { font-size: .78rem; border: 1px solid var(--line); border-radius: 20px; padding: .2rem .8rem; }
+    .empty { padding: 2rem .6rem; color: var(--muted); }
+
+    /* ================= CAFFEINE INFO ================= */
+    .info {
+        background:
+            linear-gradient(var(--bg), transparent 18%, transparent 82%, var(--bg)),
+            linear-gradient(var(--veil), var(--veil)),
+            url('{% static "cafes/caffeine_info.jpg" %}') center / cover no-repeat,
+            var(--bg);
+    }
+    .info-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 3.5rem; align-items: start; }
+    .bars h3 { font-size: 1.3rem; font-style: italic; margin: 2rem 0 .5rem; color: var(--tan); }
+    .bars h3:first-child { margin-top: 0; }
+    .row { display: grid; grid-template-columns: 150px 1fr 96px; align-items: center; gap: 1rem; width: 100%; padding: .7rem .4rem; text-align: left; font: inherit; color: var(--text); background: none; border: 0; border-bottom: 1px solid var(--line); }
+    .row b { font-weight: 600; text-align: right; font-size: .85rem; }
+    .track { position: relative; height: 10px; border-radius: 9px; background: var(--surface); overflow: hidden; }
+    .track i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--accent); border-radius: 9px; transform-origin: left; transform: scaleX(0); transition: transform 1s cubic-bezier(.16, 1, .3, 1) .2s, filter .3s; }
+    .track .rg { background: repeating-linear-gradient(45deg, var(--tan) 0 4px, transparent 4px 8px); border-radius: 0; }
+    .row.in .track i { transform: scaleX(1); }
+    .row:hover .track i:first-child { filter: brightness(1.3); }
+
+    .meter { position: sticky; top: 2rem; padding: 2rem; border: 1px solid var(--line); border-radius: 28px; background: var(--surface); backdrop-filter: blur(6px); }
+    .meter h3 { font-size: 1.6rem; margin: 0 0 1rem; }
+    .tot { font-family: 'Playfair Display', serif; font-size: 3.4rem; line-height: 1; margin: 0; }
+    .tot small { font: 300 .85rem 'Inter', sans-serif; color: var(--muted); }
+    .gauge { height: 12px; margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); overflow: hidden; }
+    .gauge span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--tan), var(--accent)); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
+    .gauge span.hot { background: #d9432f; }
+    #msg { min-height: 2.6em; margin: 0 0 1rem; line-height: 1.6; }
+    #added { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; padding: 0; margin: 0 0 1rem; }
+    #added li { font-size: .8rem; border: 1px solid var(--line); border-radius: 20px; padding: .25rem .4rem .25rem .8rem; }
+    #added button { background: none; border: 0; color: inherit; font-size: 1rem; padding: 0 .4rem; }
+    .fine { font-size: .75rem; line-height: 1.6; color: var(--muted); margin: 1.2rem 0 0; }
+
+    /* ================= CAFFEINE HISTORY (inverts the theme on purpose) ================= */
+    .hist { z-index: 2; background: var(--text); color: var(--bg); }
+    .hist .lede { color: color-mix(in srgb, var(--bg) 78%, transparent); }
+    .hist a { color: var(--accent); }
+    .hist-wrap { display: grid; grid-template-columns: 1fr 220px; gap: 4rem; }
+
+    .tl { position: relative; margin-left: .4rem; }
+    .tl::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: currentColor; opacity: .2; }
+    .tl::after { content: ""; position: absolute; left: -.5px; top: 0; bottom: 0; width: 2px; background: var(--accent); transform-origin: top; transform: scaleY(var(--p, 0)); }
+    .stop { position: relative; max-width: 60ch; padding: 0 0 2.6rem 2.2rem; }
+    .stop::before { content: ""; position: absolute; left: -6px; top: .55rem; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform .5s cubic-bezier(.34, 1.56, .64, 1); }
+    .stop.in::before { transform: scale(1); }
+    .stop h3 { font-size: 1.7rem; margin: 0 0 .5rem; }
+    .stop p { margin: 0; line-height: 1.8; }
+    .stop h3, .stop p { opacity: 0; transform: translateX(24px); transition: opacity .7s, transform .7s cubic-bezier(.16, 1, .3, 1); }
+    .stop.in h3, .stop.in p { opacity: 1; transform: none; }
+    .stop.in p { transition-delay: .12s; }
+    .src { font-size: .8rem; line-height: 1.8; margin-top: 2rem; }
+
+    .cups { position: sticky; top: 3rem; align-self: start; display: flex; flex-direction: column; align-items: center; gap: 2.5rem; color: var(--accent); }
+    .cups .cup { animation: bob 5s ease-in-out infinite; }
+    .cups .cup:nth-child(1) { width: 130px; }
+    .cups .cup:nth-child(2) { width: 90px; animation-delay: -1.5s; }
+    .cups .cup:nth-child(3) { width: 110px; animation-delay: -3s; }
+    @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-14px) rotate(3deg); } }
+    .st path { stroke-dasharray: 10; animation: steam 3s ease-in-out infinite; }
+    .st path:nth-child(2) { animation-delay: .5s; }
+    .st path:nth-child(3) { animation-delay: 1s; }
+    @keyframes steam { 0% { stroke-dashoffset: 10; opacity: 0; } 40% { opacity: .9; } 100% { stroke-dashoffset: -10; opacity: 0; } }
+
+    /* ================= THE MALOLOS COLLECTION (museum) ================= */
+    .collection { z-index: 3; background: var(--bg); padding-bottom: 9rem; }
+    .collection .wrap { max-width: 1800px; }
+    .tools { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin-bottom: 1rem; }
+    #q { flex: 1 1 280px; padding: .9rem 1.5rem; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 40px; }
+    #q::placeholder { color: var(--muted); }
+    #cnt { font-size: .85rem; color: var(--muted); margin: 0 0 2rem; }
+
+    .gallery { display: grid; grid-template-columns: clamp(110px, 19vw, 370px) 1fr clamp(110px, 19vw, 370px); gap: 1rem; margin-top: 1rem; }    
+    .catwrap.flip { transform: scaleX(-1); }
+    .gcat { display: block; width: 100%; max-width: 350px; filter: var(--logo-filter) drop-shadow(0 4px 10px rgba(0, 0, 0, .35)); 
+    animation: bounceCat 3.5s infinite alternate ease-in-out; }
+    .catwrap.flip .gcat { animation-delay: -1.7s; }
+
+    .hall { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 3.5rem 2.5rem; }
+    .exhibit { position: relative; display: flex; flex-direction: column; align-items: center; padding: 1.8rem 0 0; background: none; border: 0; color: var(--text); font: inherit; text-align: center; }
+
+    /* picture light and its cone of light */
+    .lamp { position: relative; z-index: 2; width: 56%; height: 8px; border-radius: 8px; background: var(--tan); }
+    .exhibit::before { content: ""; position: absolute; top: 2.3rem; left: 6%; width: 88%; height: 78%; clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%); background: linear-gradient(var(--glow), transparent); opacity: .45; transition: opacity .4s; pointer-events: none; }
+    .exhibit:hover::before, .exhibit:focus-visible::before { opacity: 1; }
+
+    /* arch-topped frame */
+    .frame { position: relative; z-index: 1; display: block; width: 100%; aspect-ratio: 3 / 4; margin-top: .6rem; padding: 10px; box-sizing: border-box; border: 2px solid var(--tan); border-radius: 50% 50% 12px 12px / 38% 38% 12px 12px; outline: 1px solid var(--line); outline-offset: 6px; background: var(--surface); transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
+    .exhibit:hover .frame { transform: translateY(-8px); }
+    .art { display: grid; place-items: center; width: 100%; height: 100%; overflow: hidden; border-radius: inherit; background: radial-gradient(circle at 50% 30%, var(--hero-glow), var(--bg)); }
+    .art img { width: 100%; height: 100%; object-fit: cover; }
+    .art b { font: italic 400 5rem 'Playfair Display', serif; color: var(--tan); }
+
+    /* museum plaque */
+    .plaque { display: flex; flex-direction: column; gap: .2rem; min-width: 70%; margin-top: 1.4rem; padding: .7rem 1.2rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+    .plaque i { font-size: .7rem; color: var(--muted); }
+    .plaque strong { font: 400 1.15rem 'Playfair Display', serif; }
+    .plaque small { color: var(--muted); }
+
+    /* the opened placard */
+    .det { width: min(860px, 92vw); max-height: 90vh; padding: 0; overflow: auto; border: 1px solid var(--tan); border-radius: 28px; background: var(--bg); color: var(--text); }
+    .det::backdrop { background: rgba(20, 2, 6, .78); backdrop-filter: blur(4px); }
+    .det[open] { animation: pop .45s cubic-bezier(.16, 1, .3, 1); }
+    @keyframes pop { from { opacity: 0; transform: translateY(24px) scale(.96); } }
+    .det-body { display: grid; grid-template-columns: 260px 1fr; gap: 2.5rem; padding: 2.5rem; }
+    .det-info h3 { font-size: 2.2rem; margin: 0 0 .4rem; }
+    .det-info p, .det-info ul { line-height: 1.7; color: var(--muted); }
+    .d-sub { margin: 0 0 1rem; }
+    #d-hours { list-style: none; padding: 0; margin: 0 0 1.4rem; }
+    .det .pill { display: inline-block; text-decoration: none; }
+    .det-x { position: absolute; top: 1rem; right: 1.2rem; z-index: 3; background: none; border: 0; color: var(--text); font-size: 2rem; line-height: 1; }
+
+    /* ================= SMALL SCREENS ================= */
+    @media (max-width: 960px) {
+        .hero-container { flex-direction: column; padding: 0 1.5rem; }
+        .hero-image-area { display: none; }
+        .sec { padding: calc(5rem + 90px) 1.5rem 5rem; }
+        .collection { padding-bottom: 7rem; }
+        .info-grid, .hist-wrap { grid-template-columns: 1fr; }
+        .row { grid-template-columns: 110px 1fr 80px; }
+        .meter { position: static; }
+        .cups { display: none; }
+        .gallery { grid-template-columns: 1fr; }
+        .gallery .side { display: none; }
+        .det-body { grid-template-columns: 1fr; }
+    }
+</style>
+
+<!-- Reusable SVGs, filled in by the script at the bottom -->
+<template id="cup-t">
+    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 26h38v14a14 14 0 0 1-14 14H24a14 14 0 0 1-14-14z" fill="currentColor" fill-opacity=".18"/>
+        <path d="M48 30h4a7 7 0 0 1 0 14h-5"/>
+        <g class="st">
+            <path pathLength="10" d="M20 20c-3-3 3-5 0-10"/>
+            <path pathLength="10" d="M30 20c-3-3 3-5 0-10"/>
+            <path pathLength="10" d="M40 20c-3-3 3-5 0-10"/>
+        </g>
+    </svg>
+</template>
+<template id="bean-t">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93S11 15 11 12s2-7.93 2-7.93S13 9 13 12s-2 7.93-2 7.93z"/>
+    </svg>
+</template>
+
+<!-- ================= HERO ================= -->
+<div class="hero-section">
+    <span class="floating-element cup-1 cup"></span>
+    <svg class="floating-element sparkle-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2v20M17 5l-10 14M22 12H2M19 17L5 7"/></svg>
+    <span class="floating-element bean-1 bean"></span>
+    <span class="floating-element bean-2 bean"></span>
+
+    <div class="hero-container">
+        <div class="hero-text-area">
+            <div class="hero-badge">A gentle reminder to sip &amp; savor every cup of coffee</div>
+            <h1 class="hero-h1">Great adventures<br><em>are brewed</em>, not<br>just planned.</h1>
+            <p class="hero-h3">Malolos is brimming with hidden cafes and quiet corners, scattered like coffee beans across the historic town. Channel your inner kopi cat, and hop from one neighborhood gem to the next, as you uncover the best brews Bulacan has to offer.</p>
+
+            <form class="hero-search" id="hero-search" role="search" style="animation-delay: .7s">
+                <input id="hq" type="search" placeholder="Search a cafe or barangay" aria-label="Search cafes" autocomplete="off">
+                <button type="submit" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                </button>
+            </form>
+
+            <div class="scroll-nav-container">
+                <a href="#caffeine-info" class="scroll-link">Caffeine Info <span>↓</span></a>
+                <a href="#caffeine-history" class="scroll-link">Coffee History <span>↓</span></a>
+                <a href="#malolos-collection" class="scroll-link">The Collection <span>↓</span></a>
+            </div>
+        </div>
+        <div class="hero-image-area">
+            <img src="{% static 'cafes/discover_photo.png' %}" alt="Discover Malolos Cafes" class="hero-photo">
+        </div>
+    </div>
+</div>
+
+<!-- ================= CAFFEINE INFO ================= -->
+<section id="caffeine-info" class="sec info">
+    <div class="wrap">
+        <h2>How much caffeine is in your cup?</h2>
+        <p class="lede">Rough milligrams per serving. The solid bar is the lowest figure and the striped part shows how far it can climb. Tap a drink to add it to your day and see where you land.</p>
+        <div class="info-grid">
+            <div class="bars" id="bars"></div>
+            <aside class="meter spot" aria-live="polite">
+                <h3>Your day so far</h3>
+                <p class="tot"><span id="tot">0</span> mg <small>of about 400</small></p>
+                <div class="gauge"><span id="gf"></span></div>
+                <p id="msg"></p>
+                <ul id="added"></ul>
+                <button class="pill" id="reset" type="button">Start over</button>
+                <p class="fine">Estimates use the middle of each range. Caffeine varies by brand and brew, and the safe amount is lower during pregnancy or with some health conditions. Ask your doctor if unsure.</p>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CAFFEINE HISTORY ================= -->
+<section id="caffeine-history" class="sec hist">
+    <div class="wrap">
+        <h2>Where your caffeine came from</h2>
+        <p class="lede">Before the flat white, there was a leaf, a goat, and a very long trade route.</p>
+        <div class="hist-wrap">
+            <div>
+                <div class="tl">
+                    <div class="stop">
+                        <h3>Around 2700 B.C.</h3>
+                        <p>Tea becomes the first popular caffeinated drink, born from Chinese tea cultivation.</p>
+                    </div>
+                    <div class="stop">
+                        <h3>Tea hits the road</h3>
+                        <p>Buddhist monks bring tea seeds from China to Japan, while European missionaries and merchants carry tea leaves home.</p>
+                    </div>
+                    <div class="stop">
+                        <h3>Ethiopia, thousands of years later</h3>
+                        <p>Legend says a goat herder named Kaldi noticed his goats turning lively after eating coffee cherries, and coffee was discovered.</p>
+                    </div>
+                    <div class="stop">
+                        <h3>The Arabian Peninsula</h3>
+                        <p>Coffee arrives and spreads quickly across the world, helped along by the yearly pilgrimages to Mecca.</p>
+                    </div>
+                    <div class="stop">
+                        <h3>Today, in your cup</h3>
+                        <p>Experts say 3 to 5 cups a day (300 to 400 mg of caffeine) is generally safe for most adults, enough for a lift in energy and focus without the jitters or lost sleep. Everyone reacts differently, so listen to your body.</p>
+                    </div>
+                </div>
+                <p class="src">Sources: <a href="https://www.americanpharmaceuticalreview.com/Featured-Articles/577088-Caffeine-Past-Present-and-Future/" target="_blank" rel="noopener">American Pharmaceutical Review</a> and <a href="https://aromacoffee.net/blog/coffee-caffeine-benefits" target="_blank" rel="noopener">Aroma Coffee</a>.</p>
+            </div>
+            <div class="cups" aria-hidden="true">
+                <span class="cup"></span>
+                <span class="cup"></span>
+                <span class="cup"></span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= THE MALOLOS COLLECTION ================= -->
+<section id="malolos-collection" class="sec collection">
+    <div class="wrap">
+        <h2>The Malolos collection</h2>
+        <p class="lede">A permanent exhibition of the town's cafes. Step closer to a frame and click it to read its placard.</p>
+
+        <div class="tools">
+            <input id="q" type="search" placeholder="Search by cafe name or barangay" aria-label="Search cafes by name or barangay" autocomplete="off">
+            <button class="pill" id="surprise" type="button">Surprise me</button>
+        </div>
+        <div class="tools" id="chips">
+            <button class="pill" data-p="" aria-pressed="true" type="button">All</button>
+            <button class="pill" data-p="$" aria-pressed="false" type="button">₱ Student friendly</button>
+            <button class="pill" data-p="$$" aria-pressed="false" type="button">₱₱ Mid-range</button>
+            <button class="pill" data-p="$$$" aria-pressed="false" type="button">₱₱₱ Specialty</button>
+        </div>
+        <p id="cnt" aria-live="polite"></p>
+
+        <div class="gallery">
+            <div class="side">
+                <div class="catwrap"><img class="gcat" src="{% static 'cafes/cat.png' %}" alt=""></div>
+            </div>
+
+            <div class="hall" id="hall">
+                {% for cafe in cafes %}
+                <button type="button" class="exhibit"
+                        data-name="{{ cafe.name }}"
+                        data-barangay="{{ cafe.barangay }}"
+                        data-address="{{ cafe.address }}"
+                        data-hours="{{ cafe.hours }}"
+                        data-price="{{ cafe.price_range }}"
+                        data-tags="{{ cafe.vibe_tags }}"
+                        data-rating="{{ cafe.rating|default:'' }}"
+                        data-sig="{{ cafe.signature_drink|default:'' }}"
+                        data-slug="{{ cafe.slug }}"
+                        data-img="{% if cafe.image %}{{ cafe.image.url }}{% endif %}">
+                    <span class="lamp"></span>
+                    <span class="frame">
+                        <span class="art">
+                            {% if cafe.image %}<img src="{{ cafe.image.url }}" alt="">{% else %}<b>{{ cafe.name|slice:":1" }}</b>{% endif %}
+                        </span>
+                    </span>
+                    <span class="plaque">
+                        <i>Exhibit {{ forloop.counter|stringformat:"02d" }}</i>
+                        <strong>{{ cafe.name }}</strong>
+                        <small class="p"></small>
+                    </span>
+                </button>
+                {% empty %}
+                <p class="empty">No cafes yet. Add your first one in the admin dashboard.</p>
+                {% endfor %}
+            </div>
+
+            <div class="side">
+                <div class="catwrap flip"><img class="gcat" src="{% static 'cafes/cat.png' %}" alt=""></div>
+            </div>
+        </div>
+
+        <p class="empty" id="none" hidden>No cafe matches that search. Try a barangay name or clear the filters.</p>
+    </div>
+</section>
+
+<!-- Placard that opens when a frame is clicked -->
+<dialog id="det" class="det" data-map="{% url 'map' %}">
+    <button type="button" class="det-x" id="det-x" aria-label="Close">×</button>
+    <div class="det-body">
+        <div class="frame"><span class="art" id="d-art"></span></div>
+        <div class="det-info">
+            <h3 id="d-name"></h3>
+            <p class="d-sub" id="d-sub"></p>
+            <div class="tags" id="d-tags"></div>
+            <p id="d-sig"></p>
+            <p id="d-addr"></p>
+            <ul id="d-hours"></ul>
+            <a id="d-map" class="pill" href="#">Find it on the map</a>
+        </div>
+    </div>
+</dialog>
+
+<script>
+(function () {
+    var $ = function (id) { return document.getElementById(id); };
+
+    /* ---- Inject the reusable cup and bean SVGs ---- */
+    document.querySelectorAll('.cup').forEach(function (c) { c.innerHTML = $('cup-t').innerHTML; });
+    document.querySelectorAll('.bean').forEach(function (c) { c.innerHTML = $('bean-t').innerHTML; });
+
+    /* ---- Caffeine data: [name, low mg, high mg (omit if a single figure)] ---- */
+    var D = [
+        ['Brewed coffee', [['Drip', 165], ['Pour-over', 175], ['French press', 80, 135], ['Cold brew', 155], ['Nitro cold brew', 215], ['Iced coffee', 120]]],
+        ['Espresso drinks', [['Espresso', 47, 75], ['Cappuccino', 75], ['Macchiato', 75], ['Flat white', 130], ['Latte', 63, 126], ['Frappuccino', 65]]],
+        ['Instant and decaf', [['Instant coffee', 27, 173], ['Decaf coffee', 2, 12], ['Decaf espresso', 0, 15]]],
+        ['Tea', [['Green tea', 25], ['Black tea', 25, 48]]],
+        ['Matcha', [['Matcha, 1 g', 19, 44], ['Matcha latte', 57, 176]]]    ];
+    var SCALE = 250, day = [];
+
+    $('bars').innerHTML = D.map(function (g) {
+        return '<h3>' + g[0] + '</h3>' + g[1].map(function (d) {
+            var a = d[1], b = d[2] === undefined ? a : d[2];
+            return '<button type="button" class="row spot" data-n="' + d[0] + '" data-m="' + (a + b) / 2 + '">' +
+                '<span>' + d[0] + '</span>' +
+                '<span class="track"><i style="width:' + a / SCALE * 100 + '%"></i>' +
+                '<i class="rg" style="left:' + a / SCALE * 100 + '%;width:' + (b - a) / SCALE * 100 + '%"></i></span>' +
+                '<b>' + (a === b ? a : a + '-' + b) + ' mg</b></button>';
+        }).join('');
+    }).join('') + '<p class="fine" style="margin-top:1.5rem">Matcha is listed by grams of powder, because the amount you use changes the caffeine far more than the brand or region. Cafe lattes often use about 3 to 4 g, but it varies.</p>';
+
+    function draw() {
+        var t = Math.round(day.reduce(function (s, d) { return s + d.m; }, 0));
+        $('tot').textContent = t;
+        $('gf').style.width = Math.min(t / 400 * 100, 100) + '%';
+        $('gf').className = t >= 400 ? 'hot' : '';
+        $('msg').textContent = !day.length ? 'Tap a drink on the left to add it.'
+            : t < 200 ? 'Plenty of room left today.'
+            : t < 400 ? 'Still within the usual daily limit.'
+            : 'You are past the usual daily limit. Maybe go decaf next.';
+        $('added').innerHTML = day.map(function (d, i) {
+            return '<li>' + d.n + '<button type="button" data-i="' + i + '" aria-label="Remove ' + d.n + '">×</button></li>';
+        }).join('');
+    }
+    $('bars').addEventListener('click', function (e) {
+        var r = e.target.closest('.row');
+        if (r) { day.push({ n: r.dataset.n, m: +r.dataset.m }); draw(); }
+    });
+    $('added').addEventListener('click', function (e) {
+        if (e.target.dataset.i) { day.splice(+e.target.dataset.i, 1); draw(); }
+    });
+    $('reset').addEventListener('click', function () { day = []; draw(); });
+    draw();
+
+    /* ---- The Malolos collection (museum) ---- */
+    var P = [['$', '₱', 'Student friendly'], ['$$', '₱₱', 'Mid-range'], ['$$$', '₱₱₱', 'Specialty']];
+    var ex = Array.prototype.slice.call(document.querySelectorAll('#hall .exhibit')), pf = '';
+    var det = $('det');
+
+    function price(v) {
+        return P.filter(function (x) { return x[0] === (v || '').trim(); })[0];
+    }
+
+    function fill(id, list, tag) {
+        var box = $(id);
+        box.innerHTML = '';
+        list.forEach(function (t) {
+            t = t.trim();
+            if (t) {
+                var e = document.createElement(tag);
+                e.textContent = t;
+                box.appendChild(e);
+            }
+        });
+    }
+
+    function openDet(b) {
+        var d = b.dataset, p = price(d.price), art = $('d-art');
+        $('d-name').textContent = d.name;
+        $('d-sub').textContent = [d.barangay + ', Bulacan', p ? p[1] + ' ' + p[2] : '', d.rating ? '★ ' + d.rating : ''].filter(Boolean).join('  |  ');
+        art.innerHTML = '';
+        if (d.img) {
+            var im = document.createElement('img');
+            im.src = d.img;
+            im.alt = '';
+            art.appendChild(im);
+        } else {
+            var l = document.createElement('b');
+            l.textContent = d.name.charAt(0);
+            art.appendChild(l);
+        }
+        fill('d-tags', d.tags.split(','), 'span');
+        $('d-sig').textContent = d.sig ? 'Signature drink: ' + d.sig : '';
+        $('d-addr').textContent = d.address;
+        fill('d-hours', d.hours ? d.hours.split(';') : [], 'li');
+        $('d-map').href = det.dataset.map + '?cafe=' + d.slug;
+        det.showModal();
+    }
+
+    ex.forEach(function (b) {
+        var p = price(b.dataset.price);
+        b.dataset.p = p ? p[0] : '';
+        b.querySelector('.p').textContent = (b.dataset.barangay || 'Malolos') + (p ? '  |  ' + p[1] : '');
+        b.addEventListener('click', function () { openDet(b); });
+    });
+    $('det-x').addEventListener('click', function () { det.close(); });
+    det.addEventListener('click', function (e) { if (e.target === det) det.close(); });
+
+    function filter() {
+        var s = $('q').value.trim().toLowerCase(), n = 0;
+        ex.forEach(function (b) {
+            var hay = (b.dataset.name + ' ' + b.dataset.barangay + ' ' + b.dataset.address).toLowerCase();
+            var ok = (!s || hay.indexOf(s) > -1) && (!pf || b.dataset.p === pf);
+            b.hidden = !ok;
+            if (ok) n++;
+        });
+        $('cnt').textContent = n + (n === 1 ? ' cafe' : ' cafes');
+        $('none').hidden = n > 0 || !ex.length;
+    }
+    $('q').addEventListener('input', filter);
+    $('chips').addEventListener('click', function (e) {
+        var b = e.target.closest('.pill');
+        if (!b) return;
+        pf = b.dataset.p;
+        this.querySelectorAll('.pill').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
+        filter();
+    });
+    $('surprise').addEventListener('click', function () {
+        var v = ex.filter(function (b) { return !b.hidden; });
+        if (v.length) openDet(v[Math.floor(Math.random() * v.length)]);
+    });
+    filter();
+
+    /* ---- Hero search: fills the collection search and scrolls down to it ---- */
+    $('hero-search').addEventListener('submit', function (e) {
+        e.preventDefault();
+        $('q').value = $('hq').value;
+        filter();
+        $('malolos-collection').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    /* ---- Scroll reveals ---- */
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+            if (en.isIntersecting) {
+                var el = en.target;
+                el.classList.add('in');
+                setTimeout(function () { el.classList.add('done'); }, 1100);
+                io.unobserve(el);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.sec h2, .lede, .exhibit, .row').forEach(function (el) { el.classList.add('rv'); });
+    document.querySelectorAll('.rv, .stop').forEach(function (el) { io.observe(el); });
+
+    /* ---- Timeline line follows your scroll ---- */
+    var tl = document.querySelector('.tl');
+    addEventListener('scroll', function () {
+        var b = tl.getBoundingClientRect();
+        tl.style.setProperty('--p', Math.min(1, Math.max(0, (innerHeight * 0.6 - b.top) / b.height)));
+    }, { passive: true });
+})();
+</script>
+{% endblock %}

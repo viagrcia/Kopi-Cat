@@ -1,0 +1,65 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Overview{% endblock %}
+{% block heading %}Welcome back, {{ user.username }}{% endblock %}
+{% block sub %}Here is what is happening on Kopi Cat.{% endblock %}
+
+{% block content %}
+<section class="stats">
+    <div class="stat glass">
+        <span class="stat-label">Cafes</span>
+        <strong>{{ cafe_count }}</strong>
+    </div>
+    <div class="stat glass">
+        <span class="stat-label">Registered users</span>
+        <strong>{{ user_count }}</strong>
+    </div>
+    <div class="stat glass">
+        <span class="stat-label">Need attention</span>
+        <strong>{{ attention_count }}</strong>
+    </div>
+    <div class="stat glass">
+        <span class="stat-label">Actions logged</span>
+        <strong>{{ log_count }}</strong>
+    </div>
+</section>
+
+<section class="panels">
+    <div class="panel glass">
+        <h2>Recent activity</h2>
+        {% if recent %}
+        <ul class="list">
+            {% for a in recent %}
+            <li>
+                <span class="badge {{ a.action }}">{{ a.get_action_display }}</span>
+                <span class="grow">{{ a.target }}</span>
+                <small>{{ a.created_at|timesince }} ago</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty">Nothing yet. Your adds, edits and deletes will show up here once the cafe pages are built.</p>
+        {% endif %}
+    </div>
+
+    <div class="panel glass">
+        <h2>Needs attention</h2>
+        {% if attention %}
+        <ul class="list">
+            {% for c in attention %}
+            <li>
+                <span class="grow">{{ c.name }}</span>
+                <span class="missing">
+                    {% if not c.image %}<em>photo</em>{% endif %}
+                    {% if c.rating is None %}<em>rating</em>{% endif %}
+                    {% if not c.hours %}<em>hours</em>{% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty">Every cafe has a photo, rating and hours. Nice.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard login | Kopi Cat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('kc-theme')||'dark'}catch(e){}</script>
+    <link rel="stylesheet" href="{% static 'cafes/dashboard.css' %}">
+</head>
+<body>
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+
+    <main class="login-wrap">
+        <form method="post" class="login-card glass">
+            {% csrf_token %}
+            <img src="{% static 'cafes/cat.png' %}" alt="" class="login-cat">
+            <h1>Owner login</h1>
+            <p class="lede">Sign in to manage cafes, users and activity.</p>
+
+            {% for e in form.non_field_errors %}<p class="err">{{ e }}</p>{% endfor %}
+
+            <label>Username {{ form.username }}</label>
+            <label>Password {{ form.password }}</label>
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="btn">Sign in</button>
+            <a class="back" href="{% url 'home' %}">Back to the site</a>
+        </form>
+    </main>
+</body>
+</html>

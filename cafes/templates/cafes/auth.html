@@ -1,0 +1,188 @@
+{% extends 'cafes/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* this page is always red, so keep the navbar cream in light mode too */
+    [data-theme="light"] nav { --text: #F6F3E4; --bg: #30050E; --logo-filter: brightness(0) invert(1); }
+
+    /* ================= PAGE: photo under a red wash ================= */
+    .auth {
+        position: relative;
+        min-height: 100vh;
+        padding: 210px 4rem 6rem;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        background:
+            radial-gradient(circle at 25% 40%, rgba(135, 25, 8, 0.45), transparent 10%),
+            linear-gradient(rgba(150, 22, 38, .82), rgba(88, 8, 22, .9)),
+            url('{% static "cafes/auth_bg.jpg" %}') center / cover no-repeat,
+            #410811;
+    }
+    .stage {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: 1fr 460px;
+        align-items: center;
+        gap: 6rem;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* ================= LEFT: words ================= */
+    .copy { color: #F6F3E4; }
+    .copy > * { opacity: 0; transform: translateY(20px); animation: fadeUp .8s cubic-bezier(.16, 1, .3, 1) forwards; }
+    .copy .badge { animation-delay: .2s; }
+    .copy h1 { animation-delay: .4s; }
+    .copy p { animation-delay: .6s; }
+    @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+    .badge { display: inline-block; margin-bottom: 2rem; padding: 8px 18px; border: 1px solid rgba(246, 243, 228, .35); border-radius: 30px; font-size: .65rem; text-transform: uppercase; letter-spacing: 4px; color: #D3C5B4; backdrop-filter: blur(4px); }
+    .copy h1 { margin: 0 0 1.6rem; font-size: clamp(2.6rem, 5vw, 4.6rem); line-height: 1.05; }
+    .copy h1 em { font-style: italic; background: linear-gradient(to right, #D3C5B4, #ffffff, #D3C5B4); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 5s linear infinite; }
+    @keyframes shimmer { to { background-position: 200% center; } }
+    .copy p { max-width: 42ch; margin: 0; padding-left: 20px; border-left: 1px solid #F6F3E4; font-weight: 300; line-height: 1.8; color: rgba(246, 243, 228, .85); }
+
+    /* ================= RIGHT: the cup ================= */
+    .cup-col { padding-right: 70px; }
+    .cup { position: relative; width: 100%; animation: rise 1s cubic-bezier(.16, 1, .3, 1) .3s backwards; }
+    @keyframes rise { from { opacity: 0; transform: translateY(40px); } }
+
+    .steam { position: absolute; left: 50%; top: -74px; width: 150px; transform: translateX(-50%); fill: none; stroke: rgba(246, 243, 228, .8); stroke-width: 3; stroke-linecap: round; pointer-events: none; }
+    .steam path { stroke-dasharray: 10; animation: steam 3.2s ease-in-out infinite; }
+    .steam path:nth-child(2) { animation-delay: .6s; }
+    .steam path:nth-child(3) { animation-delay: 1.2s; }
+    @keyframes steam { 0% { stroke-dashoffset: 10; opacity: 0; } 40% { opacity: 1; } 100% { stroke-dashoffset: -10; opacity: 0; } }
+
+    .rim { position: relative; z-index: 3; height: 54px; border-radius: 50%; background: #F6F3E4; box-shadow: inset 0 -4px 0 rgba(48, 5, 14, .1); }
+    .rim::after { content: ""; position: absolute; inset: 7px 12px; border-radius: 50%; background: radial-gradient(ellipse at 40% 35%, #9a5632, #3b1a0e 70%); }
+
+    .cup-body {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        margin-top: -27px;
+        padding: 3.4rem 2.8rem 5.6rem;
+        background: linear-gradient(90deg, #ebe3cd, #F6F3E4 38%, #ece4cf);
+        color: #30050E;
+        border-radius: 0 0 46% 46% / 0 0 22% 22%;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, .45);
+    }
+    .handle { position: absolute; z-index: 1; right: -64px; top: 130px; width: 70px; height: 150px; box-sizing: border-box; border: 20px solid #F6F3E4; border-left: 0; border-radius: 0 80px 80px 0; box-shadow: 6px 10px 16px rgba(0, 0, 0, .25); }
+    .saucer { position: absolute; z-index: 0; left: 50%; bottom: -30px; width: 116%; height: 60px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(ellipse at 50% 30%, #ffffff, #d9cfba 70%); box-shadow: 0 26px 40px rgba(0, 0, 0, .5); }
+    .cat { position: absolute; z-index: 4; left: -118px; bottom: -6px; width: 110px; filter: brightness(0) invert(1) drop-shadow(0 4px 10px rgba(0, 0, 0, .4)); animation: bounceCat 3.5s infinite alternate ease-in-out; }
+
+    /* ================= FORM INSIDE THE CUP ================= */
+    .cup-body h2 { margin: 0; font-size: 2.2rem; text-align: center; }
+    .cup-sub { margin: -.6rem 0 .4rem; text-align: center; font-size: .85rem; color: rgba(48, 5, 14, .65); }
+    .f { display: flex; flex-direction: column; gap: .4rem; }
+    .f label { padding-left: 1.2rem; font-size: .78rem; color: rgba(48, 5, 14, .7); }
+    .f input { width: 100%; box-sizing: border-box; padding: .85rem 1.3rem; font: inherit; color: #30050E; background: rgba(48, 5, 14, .06); border: 1px solid rgba(48, 5, 14, .22); border-radius: 40px; transition: border-color .25s, background .25s; }
+    .f input:focus { outline: none; border-color: #A63A2D; background: rgba(166, 58, 45, .06); }
+    .help, .tips { margin: 0; padding-left: 1.2rem; font-size: .72rem; line-height: 1.5; color: rgba(48, 5, 14, .6); }
+    .tips summary { cursor: pointer; color: #7A4A2E; }
+    .tips ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+    .err { margin: 0; padding-left: 1.2rem; font-size: .76rem; color: #A63A2D; }
+    .err.top { padding: .7rem 1rem; border: 1px solid rgba(166, 58, 45, .4); border-radius: 16px; background: rgba(166, 58, 45, .1); }
+
+    .go { margin-top: .4rem; padding: .95rem; border: 0; border-radius: 40px; background: #30050E; color: #F6F3E4; font: inherit; font-weight: 600; letter-spacing: .5px; cursor: pointer; transition: background .3s, transform .3s; }
+    .go:hover { background: #A63A2D; transform: translateY(-2px); }
+    .alt { margin: 0; text-align: center; font-size: .82rem; color: rgba(48, 5, 14, .7); }
+    .alt a { color: #A63A2D; font-weight: 600; }
+
+    /* ================= FLOATING BEANS ================= */
+    .bean { position: absolute; z-index: 1; color: rgba(246, 243, 228, .22); pointer-events: none; animation: drift 12s ease-in-out infinite; }
+    .bean svg { display: block; width: 100%; height: auto; fill: currentColor; }
+    .bean.a { top: 24%; left: 4%; width: 40px; }
+    .bean.b { bottom: 14%; left: 38%; width: 28px; animation-delay: -4s; }
+    .bean.c { top: 20%; right: 5%; width: 34px; animation-delay: -8s; }
+    @keyframes drift { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-22px) rotate(18deg); } }
+
+    /* ================= SMALL SCREENS ================= */
+    @media (max-width: 960px) {
+        .auth { padding: 190px 1.5rem 5rem; }
+        .stage { grid-template-columns: 1fr; gap: 5rem; }
+        .copy { text-align: center; }
+        .copy p { margin: 0 auto; border-left: 0; padding-left: 0; }
+        .cup-col { padding-right: 70px; max-width: 520px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+        .cat { display: none; }
+    }
+    @media (max-width: 560px) {
+        .cup-col { padding-right: 0; }
+        .handle { display: none; }
+        .cup-body { padding: 3rem 1.8rem 5rem; }
+    }
+</style>
+
+<main class="auth">
+    <span class="bean a"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93S11 15 11 12s2-7.93 2-7.93S13 9 13 12s-2 7.93-2 7.93z"/></svg></span>
+    <span class="bean b"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93S11 15 11 12s2-7.93 2-7.93S13 9 13 12s-2 7.93-2 7.93z"/></svg></span>
+    <span class="bean c"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93S11 15 11 12s2-7.93 2-7.93S13 9 13 12s-2 7.93-2 7.93z"/></svg></span>
+
+    <div class="stage">
+
+        <div class="copy">
+            <span class="badge">A gentle reminder to sip &amp; savor</span>
+            {% if mode == 'register' %}
+            <h1>Start your <em>cafe-hopping</em> story.</h1>
+            <p>Make an account to keep your own journal: the cafes you have tried, the photos you took, and the notes you will want to remember.</p>
+            {% else %}
+            <h1>Welcome back, <em>kopi cat</em>.</h1>
+            <p>Your journal is right where you left it. Log in to add your next cafe, a new photo, or another stamp.</p>
+            {% endif %}
+        </div>
+
+        <div class="cup-col">
+            <div class="cup">
+                <svg class="steam" viewBox="0 0 150 70" aria-hidden="true">
+                    <path pathLength="10" d="M45 66c-10-14 10-20 0-36"/>
+                    <path pathLength="10" d="M75 66c-10-14 10-20 0-36"/>
+                    <path pathLength="10" d="M105 66c-10-14 10-20 0-36"/>
+                </svg>
+
+                <div class="rim"></div>
+
+                <form method="post" class="cup-body">
+                    {% csrf_token %}
+                    <h2>{% if mode == 'register' %}Sign up{% else %}Log in{% endif %}</h2>
+                    <p class="cup-sub">{% if mode == 'register' %}Free, and it only takes a minute.{% else %}Good to see you again.{% endif %}</p>
+
+                    {% for e in form.non_field_errors %}<p class="err top">{{ e }}</p>{% endfor %}
+
+                    {% for field in form %}
+                    <div class="f">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for e in field.errors %}<p class="err">{{ e }}</p>{% endfor %}
+                        {% if field.name == 'password1' %}
+                        <details class="tips"><summary>Password tips</summary>{{ field.help_text|safe }}</details>
+                        {% elif field.help_text and field.name != 'password2' %}
+                        <p class="help">{{ field.help_text }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if mode == 'login' %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+                    <button type="submit" class="go">{% if mode == 'register' %}Create my journal{% else %}Log in{% endif %}</button>
+                    <p class="alt">
+                        {% if mode == 'register' %}Already have an account? <a href="{% url 'login' %}">Log in</a>
+                        {% else %}New here? <a href="{% url 'register' %}">Create an account</a>{% endif %}
+                    </p>
+                </form>
+
+                <span class="handle"></span>
+                <div class="saucer"></div>
+                <img class="cat" src="{% static 'cafes/cat.png' %}" alt="">
+            </div>
+        </div>
+
+    </div>
+</main>
+{% endblock %}
